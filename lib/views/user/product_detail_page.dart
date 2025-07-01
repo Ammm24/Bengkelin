@@ -1,28 +1,64 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bengkelin/views/checkout_page.dart'; // Pastikan path ini benar
+import 'package:flutter_bengkelin/views/user/checkout_page.dart';
+import 'package:intl/intl.dart'; // Tambahkan untuk format mata uang
 
 class ProductDetailPage extends StatelessWidget {
   final Map<String, dynamic> product;
 
+  // Constructor awal Anda
   const ProductDetailPage({
     super.key,
     required this.product,
-    required Map<String, dynamic> itemDetail,
+    required Map<String, dynamic>
+    itemDetail, // Pertahankan ini seperti yang Anda inginkan
   });
+
+  // Helper untuk mengurai harga dari string ke double
+  double _parsePrice(String priceString) {
+    String cleanPrice = priceString
+        .replaceAll('Rp ', '')
+        .replaceAll('.', '')
+        .replaceAll(',', '');
+    return double.tryParse(cleanPrice) ?? 0.0;
+  }
+
+  // Helper untuk format mata uang IDR
+  String _formatCurrency(double amount) {
+    final formatCurrency = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+    return formatCurrency.format(amount);
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Penanganan null dasar untuk properti product
+    final String productName =
+        product['name'] as String? ?? 'Produk Tidak Tersedia';
+    final String productShop =
+        product['shop'] as String? ?? 'Toko Tidak Tersedia';
+    final String productPriceString = product['price'] as String? ?? 'Rp 0';
+    final String productDescription =
+        product['description'] as String? ??
+        'Tidak ada deskripsi untuk produk ini.';
+    final String productImage = product['image'] as String? ?? '';
+
+    // Asumsi kuantitas selalu 1 dari ProductDetailPage ini jika tidak ada mekanisme kuantitas
+    final int productQuantity = 1;
+    final double productCalculatedPrice =
+        _parsePrice(productPriceString) * productQuantity;
+
     return Scaffold(
-      backgroundColor: const Color(
-        0xFFF0F1F5,
-      ), // Warna latar belakang sesuai gambar
+      backgroundColor: const Color(0xFFF0F1F5),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A2E)),
           onPressed: () {
-            Navigator.pop(context); // Kembali ke halaman sebelumnya
+            Navigator.pop(context);
           },
         ),
         title: const Text(
@@ -30,16 +66,15 @@ class ProductDetailPage extends StatelessWidget {
           style: TextStyle(
             color: Color(0xFF1A1A2E),
             fontWeight: FontWeight.bold,
-            fontSize: 20, // Lebih kecil dari judul utama halaman
+            fontSize: 20,
           ),
         ),
-        centerTitle: true, // Judul di tengah
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // <<< AWAL KODE YANG HILANG >>>
             // Gambar Produk
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -57,21 +92,33 @@ class ProductDetailPage extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15),
-                  child: Image.asset(
-                    product['image']!, // Mengambil gambar dari data produk
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: 250, // Tinggi gambar bisa disesuaikan
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Center(
-                        child: Icon(
-                          Icons.broken_image,
-                          size: 80,
-                          color: Colors.grey,
+                  child: productImage.isNotEmpty
+                      ? Image.asset(
+                          productImage,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: 250,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                size: 80,
+                                color: Colors.grey,
+                              ),
+                            );
+                          },
+                        )
+                      : const SizedBox(
+                          height: 250,
+                          width: double.infinity,
+                          child: Center(
+                            child: Icon(
+                              Icons.image_not_supported,
+                              size: 80,
+                              color: Colors.grey,
+                            ),
+                          ),
                         ),
-                      );
-                    },
-                  ),
                 ),
               ),
             ),
@@ -79,14 +126,12 @@ class ProductDetailPage extends StatelessWidget {
 
             // Nama Produk, Toko, dan Harga
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 25.0,
-              ), // Padding disesuaikan
+              padding: const EdgeInsets.symmetric(horizontal: 25.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    product['name']!, // Mengambil nama dari data produk
+                    productName,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 22,
@@ -95,12 +140,14 @@ class ProductDetailPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    product['shop']!, // Mengambil toko dari data produk
+                    productShop,
                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    product['price']!, // Mengambil harga dari data produk
+                    _formatCurrency(
+                      _parsePrice(productPriceString),
+                    ), // Format harga
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
@@ -110,7 +157,8 @@ class ProductDetailPage extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 30), // Spasi sebelum deskripsi
+            const SizedBox(height: 30),
+
             // Deskripsi Produk
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -126,10 +174,8 @@ class ProductDetailPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // Menggunakan deskripsi dummy atau dari data produk jika ada
                   Text(
-                    product['description'] ??
-                        'This edition of the RS-X T3CH features bold pops of color and amplified detailing in the upper. Read more',
+                    productDescription,
                     style: TextStyle(
                       fontSize: 15,
                       color: Colors.grey[700],
@@ -139,8 +185,7 @@ class ProductDetailPage extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 50), // Spasi sebelum tombol
-            // <<< AKHIR KODE YANG HILANG >>>
+            const SizedBox(height: 50),
 
             // Tombol "Check Out Sekarang"
             Center(
@@ -148,14 +193,26 @@ class ProductDetailPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 25.0),
                 child: ElevatedButton(
                   onPressed: () {
+                    // Siapkan data produk untuk CheckoutPage
+                    final Map<String, dynamic> productDataForCheckout = {
+                      'id': product['id'] ?? UniqueKey().toString(),
+                      'name': productName,
+                      'price': productPriceString,
+                      'image': productImage,
+                      'description': productDescription,
+                      'quantity': productQuantity, // Kuantitas diasumsikan 1
+                    };
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => CheckoutPage(
-                          productToCheckout: product,
-                          selectedServices: {},
-                          totalPrice: 1500,
-                          selectedService: {},
+                          productToCheckout: productDataForCheckout,
+                          totalPrice: productCalculatedPrice,
+                          selectedService:
+                              productDataForCheckout, // Bisa juga kirim productDataForCheckout di sini
+                          selectedServices:
+                              null, // Ini harus null karena tidak ada servis kategori dari sini
                         ),
                       ),
                     );

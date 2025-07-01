@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bengkelin/views/product_detail_page.dart';
+import 'package:flutter_bengkelin/views/user/product_detail_page.dart';
 
 class ProductPage extends StatefulWidget {
   const ProductPage({super.key});

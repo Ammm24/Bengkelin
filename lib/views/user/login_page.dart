@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bengkelin/views/auth/register_page.dart';
-import 'package:flutter_bengkelin/views/home_page.dart'; // Import the HomePage
+import 'package:flutter_bengkelin/views/user/home_page.dart';
+import 'package:flutter_bengkelin/views/user/register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

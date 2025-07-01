@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bengkelin/views/chat_page.dart';
-import 'package:flutter_bengkelin/views/service_category_page.dart'; // Pastikan path ini benar
+import 'package:flutter_bengkelin/views/user/chat_page.dart';
+import 'package:flutter_bengkelin/views/user/service_category_page.dart';
 
 class ServicePage extends StatefulWidget {
   const ServicePage({super.key});

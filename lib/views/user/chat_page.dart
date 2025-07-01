@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bengkelin/views/chat_detail.dart';
+import 'package:flutter_bengkelin/views/user/chat_detail.dart';
 
 class ChatsPage extends StatefulWidget {
   const ChatsPage({super.key, required String initialMessage});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bengkelin/views/checkout_page.dart'; // Pastikan path ini benar
+import 'package:flutter_bengkelin/views/user/checkout_page.dart';
 import 'package:intl/intl.dart'; // Untuk format mata uang
 
 class ServiceCategoryPage extends StatefulWidget {
@@ -17,37 +17,37 @@ class ServiceCategoryPage extends StatefulWidget {
 }
 
 class _ServiceCategoryPageState extends State<ServiceCategoryPage> {
-  // State untuk menyimpan item yang dipilih dan jumlahnya
   final Map<Map<String, dynamic>, int> _selectedServices = {};
   double _totalPrice = 0.0;
 
-  // Controller untuk TextField pencarian
   final TextEditingController _searchController = TextEditingController();
-  // Daftar layanan yang difilter berdasarkan pencarian
   List<Map<String, dynamic>> _filteredServices = [];
 
   @override
   void initState() {
     super.initState();
-    _filteredServices =
-        widget.categoryServices; // Inisialisasi dengan semua layanan
-    _calculateTotalPrice(); // Hitung total awal (jika ada item yang sudah dipilih sebelumnya, meskipun dalam kasus ini kosong)
-
-    // Listener untuk TextField pencarian
+    _filteredServices = widget.categoryServices;
     _searchController.addListener(_filterServices);
   }
 
   @override
   void dispose() {
-    _searchController.dispose(); // Pastikan controller di-dispose
+    _searchController.dispose();
     super.dispose();
+  }
+
+  double _parsePrice(String priceString) {
+    String cleanPrice = priceString
+        .replaceAll('Rp ', '')
+        .replaceAll('.', '')
+        .replaceAll(',', '');
+    return double.tryParse(cleanPrice) ?? 0.0;
   }
 
   void _filterServices() {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredServices = widget.categoryServices.where((service) {
-        // Gunakan ?? '' untuk memastikan tidak null saat diakses
         final nameLower = service['name']?.toLowerCase() ?? '';
         final descriptionLower = service['description']?.toLowerCase() ?? '';
         final workshopLower = service['workshop']?.toLowerCase() ?? '';
@@ -59,12 +59,15 @@ class _ServiceCategoryPageState extends State<ServiceCategoryPage> {
     });
   }
 
-  void _toggleServiceSelection(Map<String, dynamic> service) {
+  void _updateServiceQuantity(Map<String, dynamic> service, int change) {
     setState(() {
-      if (_selectedServices.containsKey(service)) {
-        _selectedServices.remove(service);
+      int currentQuantity = _selectedServices[service] ?? 0;
+      int newQuantity = currentQuantity + change;
+
+      if (newQuantity > 0) {
+        _selectedServices[service] = newQuantity;
       } else {
-        _selectedServices[service] = 1;
+        _selectedServices.remove(service);
       }
       _calculateTotalPrice();
     });
@@ -73,15 +76,10 @@ class _ServiceCategoryPageState extends State<ServiceCategoryPage> {
   void _calculateTotalPrice() {
     double tempTotal = 0.0;
     _selectedServices.forEach((service, quantity) {
-      // Pastikan service['price'] tidak null sebelum memanggil replaceAll
-      String priceString =
-          (service['price'] as String?)
-              ?.replaceAll('Rp ', '')
-              .replaceAll('.', '')
-              .replaceAll(',', '') ??
-          '0'; // Berikan '0' jika service['price'] null
-      double price = double.tryParse(priceString) ?? 0.0;
-      tempTotal += price * quantity;
+      String? priceString = service['price'] as String?;
+      if (priceString != null) {
+        tempTotal += _parsePrice(priceString) * quantity;
+      }
     });
     setState(() {
       _totalPrice = tempTotal;
@@ -127,7 +125,7 @@ class _ServiceCategoryPageState extends State<ServiceCategoryPage> {
             TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search by name or skills',
+                hintText: 'Cari layanan...',
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -138,22 +136,38 @@ class _ServiceCategoryPageState extends State<ServiceCategoryPage> {
               ),
             ),
             const SizedBox(height: 20),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16.0,
-                mainAxisSpacing: 16.0,
-                childAspectRatio: 0.75,
-              ),
-              itemCount: _filteredServices.length,
-              itemBuilder: (context, index) {
-                final service = _filteredServices[index];
-                final isSelected = _selectedServices.containsKey(service);
-                return _buildServiceGridItem(context, service, isSelected);
-              },
-            ),
+            _filteredServices.isEmpty && _searchController.text.isNotEmpty
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text(
+                        'Layanan tidak ditemukan.',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    ),
+                  )
+                : GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16.0,
+                          mainAxisSpacing: 16.0,
+                          childAspectRatio: 0.75,
+                        ),
+                    itemCount: _filteredServices.length,
+                    itemBuilder: (context, index) {
+                      final service = _filteredServices[index];
+                      final int currentQuantity =
+                          _selectedServices[service] ?? 0;
+                      return _buildServiceGridItem(
+                        context,
+                        service,
+                        currentQuantity,
+                      );
+                    },
+                  ),
           ],
         ),
       ),
@@ -212,9 +226,12 @@ class _ServiceCategoryPageState extends State<ServiceCategoryPage> {
                             MaterialPageRoute(
                               builder: (context) => CheckoutPage(
                                 selectedServices: _selectedServices,
-                                totalPrice: _totalPrice,
-                                productToCheckout: {},
-                                selectedService: {},
+                                totalPrice:
+                                    _totalPrice, // Mengirim total harga dari ServiceCategoryPage
+                                productToCheckout:
+                                    null, // Null karena ini adalah servis, bukan produk
+                                selectedService:
+                                    null, // Null karena kita mengirim multiple services
                               ),
                             ),
                           );
@@ -254,104 +271,117 @@ class _ServiceCategoryPageState extends State<ServiceCategoryPage> {
   Widget _buildServiceGridItem(
     BuildContext context,
     Map<String, dynamic> service,
-    bool isSelected,
+    int currentQuantity,
   ) {
-    // Memberikan nilai default jika 'image' null
-    final String imageUrl =
-        service['image'] as String? ??
-        ''; // Default empty string or a placeholder path
+    final String imageUrl = service['image'] as String? ?? '';
 
-    return GestureDetector(
-      onTap: () {
-        _toggleServiceSelection(service);
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFD3E0D6) : Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          border: isSelected
-              ? Border.all(color: const Color(0xFF4F625D), width: 2)
-              : null,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(15),
-                ),
-                child: imageUrl.isNotEmpty
-                    ? Image.asset(
-                        imageUrl, // Menggunakan imageUrl yang sudah ditangani null
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Icon(
-                              Icons.broken_image,
-                              size: 50,
-                              color: Colors.grey,
-                            ),
-                          );
-                        },
-                      )
-                    : const Center(
-                        // Jika imageUrl kosong, tampilkan placeholder
-                        child: Icon(
-                          Icons.broken_image,
-                          size: 50,
-                          color: Colors.grey,
-                        ),
+    return Container(
+      decoration: BoxDecoration(
+        color: currentQuantity > 0 ? const Color(0xFFD3E0D6) : Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: currentQuantity > 0
+            ? Border.all(color: const Color(0xFF4F625D), width: 2)
+            : null,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(15),
+              ),
+              child: imageUrl.isNotEmpty
+                  ? Image.asset(
+                      imageUrl,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(
+                            Icons.broken_image,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                        );
+                      },
+                    )
+                  : const Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        size: 50,
+                        color: Colors.grey,
                       ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    service['name'] as String? ??
-                        'Nama Tidak Tersedia', // Penanganan null
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Color(0xFF1A1A2E),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    service['price'] as String? ??
-                        'Harga Tidak Tersedia', // Penanganan null
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: Color(0xFF4F625D),
-                    ),
-                  ),
-                ],
-              ),
             ),
-            if (isSelected)
-              const Align(
-                alignment: Alignment.bottomRight,
-                child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Icon(Icons.check_circle, color: Color(0xFF4F625D)),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  service['name'] as String? ?? 'Nama Tidak Tersedia',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Color(0xFF1A1A2E),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-          ],
-        ),
+                const SizedBox(height: 5),
+                Text(
+                  _formatCurrency(
+                    _parsePrice(service['price'] as String? ?? '0'),
+                  ),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Color(0xFF4F625D),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.remove_circle_outline,
+                        color: Colors.red,
+                      ),
+                      onPressed: currentQuantity > 0
+                          ? () => _updateServiceQuantity(service, -1)
+                          : null,
+                    ),
+                    Text(
+                      '$currentQuantity',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.add_circle_outline,
+                        color: Color(0xFF4F625D),
+                      ),
+                      onPressed: () => _updateServiceQuantity(service, 1),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,6 +1,6 @@
 // main.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bengkelin/views/splash_scren.dart';
+import 'package:flutter_bengkelin/views/user/splash_scren.dart';
 
 void main() {
   runApp(const MyApp());

@@ -1,9 +1,9 @@
 // lib/pages/home_page.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bengkelin/views/chat_page.dart';
-import 'package:flutter_bengkelin/views/product_page.dart';
-import 'package:flutter_bengkelin/views/service_page.dart';
+import 'package:flutter_bengkelin/views/user/chat_page.dart';
+import 'package:flutter_bengkelin/views/user/product_page.dart';
+import 'package:flutter_bengkelin/views/user/service_page.dart';
 // ... (imports halaman lain seperti chats_page.dart, products_page.dart, services_page.dart)
 
 class HomePage extends StatefulWidget {
