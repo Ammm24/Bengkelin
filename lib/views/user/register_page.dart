@@ -8,11 +8,8 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  String? _selectedGender;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
-
-  final List<String> _genderOptions = ['Laki-laki', 'Perempuan', 'Lainnya'];
 
   @override
   Widget build(BuildContext context) {
@@ -77,39 +74,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Jenis Kelamin Dropdown
-            DropdownButtonFormField<String>(
-              value: _selectedGender,
-              decoration: InputDecoration(
-                hintText: 'Jenis Kelamin',
-                hintStyle: TextStyle(color: Colors.grey[500]),
-                fillColor: Colors.white,
-                filled: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-              ),
-              items: _genderOptions.map((String gender) {
-                return DropdownMenuItem<String>(
-                  value: gender,
-                  child: Text(gender),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedGender = newValue;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Alamat Email Input
+            
             TextField(
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
