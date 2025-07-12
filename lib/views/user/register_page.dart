@@ -11,6 +11,12 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
 
+  String? selectedKecamatan;
+  String? selectedKelurahan;
+
+  List<String> kecamatanList = [];
+  List<String> kelurahanList = [];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,8 +42,6 @@ class _RegisterPageState extends State<RegisterPage> {
               style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
             const SizedBox(height: 40),
-
-            // Nama Lengkap Input
             TextField(
               decoration: InputDecoration(
                 hintText: 'Nama Lengkap',
@@ -55,8 +59,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Username Input
             TextField(
               decoration: InputDecoration(
                 hintText: 'Username',
@@ -74,7 +76,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
             const SizedBox(height: 16),
-            
             TextField(
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
@@ -93,8 +94,57 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Kata Sandi Input
+            DropdownButtonFormField<String>(
+              value: selectedKecamatan,
+              hint: const Text('Pilih Kecamatan'),
+              items: kecamatanList.map((kec) {
+                return DropdownMenuItem(
+                  value: kec,
+                  child: Text(kec),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedKecamatan = value;
+                  selectedKelurahan = null;
+                  // TODO: Fetch kelurahan dari API berdasarkan kecamatan
+                });
+              },
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: selectedKelurahan,
+              hint: const Text('Pilih Kelurahan'),
+              items: kelurahanList.map((kel) {
+                return DropdownMenuItem(
+                  value: kel,
+                  child: Text(kel),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedKelurahan = value;
+                });
+              },
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
             TextField(
               obscureText: !_isPasswordVisible,
               decoration: InputDecoration(
@@ -126,8 +176,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Konfirmasi Kata Sandi Input
             TextField(
               obscureText: !_isConfirmPasswordVisible,
               decoration: InputDecoration(
@@ -159,8 +207,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
             const SizedBox(height: 30),
-
-            // Daftar Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -193,41 +239,6 @@ class _RegisterPageState extends State<RegisterPage> {
               style: TextStyle(color: Colors.grey, fontSize: 14),
             ),
             const SizedBox(height: 20),
-
-            // Masuk dengan Google Button
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () {
-                  // Implement Google sign-up logic
-                },
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  side: const BorderSide(
-                    color: Color(0xFFE0E0E0),
-                  ), // Light grey border
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(width: 10),
-                    Text(
-                      'Masuk dengan Google',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[700],
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
             const SizedBox(height: 60),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -256,7 +267,6 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             TextButton(
               onPressed: () {
-                // Implement 'Nanti Saja' logic, e.g., navigate to home without registration
               },
               child: const Text(
                 'Nanti Saja',
