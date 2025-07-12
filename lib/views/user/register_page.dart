@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bengkelin/viewmodel/service_viewmodel.dart';
+
+import '../../model/kecamatan_model.dart';
+import '../../model/kelurahan_model.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -14,8 +18,15 @@ class _RegisterPageState extends State<RegisterPage> {
   String? selectedKecamatan;
   String? selectedKelurahan;
 
-  List<String> kecamatanList = [];
-  List<String> kelurahanList = [];
+  List<KecamatanModel> kecamatanModelList = [];
+  List<KelurahanModel> kelurahanModelList = [];
+  int? selectedKecamatanId;
+
+  @override
+  void initState() {
+    getKecamatan();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,21 +105,24 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: selectedKecamatan,
+            DropdownButtonFormField<int>(
+              value: selectedKecamatanId,
               hint: const Text('Pilih Kecamatan'),
-              items: kecamatanList.map((kec) {
-                return DropdownMenuItem(
-                  value: kec,
-                  child: Text(kec),
+              items: kecamatanModelList.map((kec) {
+                return DropdownMenuItem<int>(
+                  value: kec.id,
+                  child: Text(kec.name),
                 );
               }).toList(),
               onChanged: (value) {
                 setState(() {
-                  selectedKecamatan = value;
+                  selectedKecamatanId = value;
                   selectedKelurahan = null;
-                  // TODO: Fetch kelurahan dari API berdasarkan kecamatan
+                  kelurahanModelList = [];
                 });
+                if (value != null) {
+                  getKelurahan(value);
+                }
               },
               decoration: InputDecoration(
                 filled: true,
@@ -124,10 +138,10 @@ class _RegisterPageState extends State<RegisterPage> {
             DropdownButtonFormField<String>(
               value: selectedKelurahan,
               hint: const Text('Pilih Kelurahan'),
-              items: kelurahanList.map((kel) {
-                return DropdownMenuItem(
-                  value: kel,
-                  child: Text(kel),
+              items: kelurahanModelList.map((kel) {
+                return DropdownMenuItem<String>(
+                  value: kel.name,
+                  child: Text(kel.name),
                 );
               }).toList(),
               onChanged: (value) {
@@ -282,5 +296,27 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
     );
+  }
+
+  Future<void> getKecamatan() async {
+    final response = await ServiceViewmodel().kecamatan();
+    if (response.code == 200 && response.data != null) {
+      setState(() {
+        kecamatanModelList = response.data
+            .map<KecamatanModel>((json) => KecamatanModel.fromJson(json))
+            .toList();
+      });
+    }
+  }
+
+  Future<void> getKelurahan(int kecamatanId) async {
+    final response = await ServiceViewmodel().kelurahan(kecamatanId: kecamatanId);
+    if (response.code == 200 && response.data != null) {
+      setState(() {
+        kelurahanModelList = response.data
+            .map<KelurahanModel>((json) => KelurahanModel.fromJson(json))
+            .toList();
+      });
+    }
   }
 }
