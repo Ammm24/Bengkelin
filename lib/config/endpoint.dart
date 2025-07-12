@@ -1,4 +1,7 @@
 class Endpoint {
+  //auth
+  static const String authLoginUrl = '/api/login';
+  static const String authRegisterUrl = '/api/register';
 
   // service
   static const String kecamatanUrl = '/api/service/kecamatan';
