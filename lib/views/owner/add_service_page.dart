@@ -1,10 +1,10 @@
+// lib/views/owner/add_service_page.dart
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:file_picker/file_picker.dart'; // Import file_picker
-import 'dart:io'; // Untuk menggunakan kelas File (khusus untuk pratinjau gambar)
+import 'package:file_picker/file_picker.dart';
+import 'dart:io'; // Penting: Pastikan import ini ada untuk File
 
 class AddServicePage extends StatefulWidget {
-  // Mengubah ke StatefulWidget
   const AddServicePage({super.key});
 
   @override
@@ -12,25 +12,22 @@ class AddServicePage extends StatefulWidget {
 }
 
 class _AddServicePageState extends State<AddServicePage> {
-  PlatformFile? _pickedFile; // Untuk menyimpan file yang dipilih
+  PlatformFile? _pickedFile;
 
-  // Fungsi untuk memilih file
   Future<void> _pickFile() async {
     final result = await FilePicker.platform.pickFiles(
-      type:
-          FileType.image, // Contoh: Hanya izinkan memilih gambar untuk service
-      allowMultiple: false, // Hanya izinkan memilih satu file
+      type: FileType.image,
+      allowMultiple: false,
     );
 
     if (result != null && result.files.isNotEmpty) {
       setState(() {
-        _pickedFile = result.files.first; // Ambil file pertama jika sukses
+        _pickedFile = result.files.first;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('File selected: ${_pickedFile!.name}')),
       );
     } else {
-      // User membatalkan pemilihan file
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('No file selected')));
@@ -40,7 +37,7 @@ class _AddServicePageState extends State<AddServicePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Latar belakang putih
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -51,7 +48,7 @@ class _AddServicePageState extends State<AddServicePage> {
           },
         ),
         title: const Text(
-          'Add Service', // Judul disesuaikan untuk Service
+          'Add Service',
           style: TextStyle(
             color: Color(0xFF1A1A2E),
             fontWeight: FontWeight.bold,
@@ -90,131 +87,133 @@ class _AddServicePageState extends State<AddServicePage> {
                 width: double.infinity,
                 height: 180,
                 color: Colors.white,
-                child:
-                    _pickedFile ==
-                        null // Cek apakah sudah ada file yang dipilih
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.folder_open,
-                            size: 50,
-                            color: Colors.grey[600],
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Drag your file(s) to start uploading',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[700],
+                child: GestureDetector(
+                  // Tambahkan GestureDetector di sini
+                  onTap:
+                      _pickFile, // Agar seluruh area bisa diklik untuk pilih file
+                  child: _pickedFile == null
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.folder_open,
+                              size: 50,
+                              color: Colors.grey[600],
                             ),
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            'OR',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed: _pickFile, // Panggil fungsi _pickFile
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Colors.blue,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                side: const BorderSide(color: Colors.blue),
-                              ),
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 25,
-                                vertical: 12,
+                            const SizedBox(height: 10),
+                            Text(
+                              'Drag your file(s) to start uploading',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[700],
                               ),
                             ),
-                            child: const Text('Browse files'),
-                          ),
-                        ],
-                      )
-                    : Stack(
-                        // Tampilkan file yang dipilih jika ada
-                        alignment: Alignment.center,
-                        children: [
-                          // Tampilkan gambar jika file yang dipilih adalah gambar DAN path-nya tidak null.
-                          if (_pickedFile!.path != null &&
-                              (_pickedFile!.extension == 'jpg' ||
-                                  _pickedFile!.extension == 'jpeg' ||
-                                  _pickedFile!.extension == 'png' ||
-                                  _pickedFile!.extension == 'gif'))
-                            Image.file(
-                              File(
-                                _pickedFile!.path!,
-                              ), // Gunakan '!' karena sudah dipastikan tidak null di 'if'
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                            )
-                          else // Jika bukan gambar atau path-nya null, tampilkan ikon dan nama file
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.description,
-                                  size: 50,
-                                  color: Colors.grey[600],
-                                ), // Ikon generik untuk file
-                                const SizedBox(height: 10),
-                                Text(
-                                  _pickedFile!.name,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                            const SizedBox(height: 5),
+                            Text(
+                              'OR',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              onPressed: _pickFile,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.blue,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  side: const BorderSide(color: Colors.blue),
                                 ),
-                                if (_pickedFile!.size != null)
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 25,
+                                  vertical: 12,
+                                ),
+                              ),
+                              child: const Text('Browse files'),
+                            ),
+                          ],
+                        )
+                      : Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Perbaikan di sini: Pastikan _pickedFile.path tidak null sebelum membuat File
+                            if (_pickedFile!.path != null &&
+                                (_pickedFile!.extension == 'jpg' ||
+                                    _pickedFile!.extension == 'jpeg' ||
+                                    _pickedFile!.extension == 'png' ||
+                                    _pickedFile!.extension == 'gif'))
+                              Image.file(
+                                File(
+                                  _pickedFile!.path!,
+                                ), // Ini harusnya File(_pickedFile!.path!)
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: double.infinity,
+                              )
+                            else
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.description,
+                                    size: 50,
+                                    color: Colors.grey[600],
+                                  ),
+                                  const SizedBox(height: 10),
                                   Text(
-                                    '(${(_pickedFile!.size! / 1024).toStringAsFixed(2)} KB)',
+                                    _pickedFile!.name,
+                                    textAlign: TextAlign.center,
                                     style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                              ],
-                            ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.close,
-                                color: Colors.white,
-                                shadows: [
-                                  Shadow(color: Colors.black, blurRadius: 4),
+                                  if (_pickedFile!.size != null)
+                                    Text(
+                                      '(${(_pickedFile!.size! / 1024).toStringAsFixed(2)} KB)',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                                 ],
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  _pickedFile = null; // Hapus file yang dipilih
-                                });
-                              },
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 8,
-                            child: ElevatedButton.icon(
-                              onPressed: _pickFile, // Izinkan ganti file
-                              icon: const Icon(Icons.edit),
-                              label: const Text('Change File'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black54,
-                                foregroundColor: Colors.white,
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: IconButton(
+                                icon: const Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                  shadows: [
+                                    Shadow(color: Colors.black, blurRadius: 4),
+                                  ],
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _pickedFile = null;
+                                  });
+                                },
                               ),
                             ),
-                          ),
-                        ],
-                      ),
+                            Positioned(
+                              bottom: 8,
+                              child: ElevatedButton.icon(
+                                onPressed: _pickFile,
+                                icon: const Icon(Icons.edit),
+                                label: const Text('Change File'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.black54,
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
               ),
             ),
             const SizedBox(height: 30),
@@ -245,7 +244,6 @@ class _AddServicePageState extends State<AddServicePage> {
                         ),
                       ),
                     );
-                    // Lakukan proses upload file ke server di sini
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -253,7 +251,6 @@ class _AddServicePageState extends State<AddServicePage> {
                       ),
                     );
                   }
-                  // Navigator.pop(context); // Kembali setelah menyimpan jika berhasil
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4F625D),
@@ -279,7 +276,6 @@ class _AddServicePageState extends State<AddServicePage> {
     );
   }
 
-  // Widget pembantu untuk TextField biasa
   Widget _buildTextField({
     required String hintText,
     TextInputType keyboardType = TextInputType.text,
@@ -311,7 +307,6 @@ class _AddServicePageState extends State<AddServicePage> {
     );
   }
 
-  // Widget pembantu untuk Multi-line TextField (Deskripsi)
   Widget _buildMultiLineTextField({required String hintText}) {
     return TextField(
       maxLines: 5,

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bengkelin/views/user/chat_page.dart';
 import 'package:flutter_bengkelin/views/user/product_page.dart';
 import 'package:flutter_bengkelin/views/user/service_page.dart';
-// ... (imports halaman lain seperti chats_page.dart, products_page.dart, services_page.dart)
+import 'package:shared_preferences/shared_preferences.dart'; // <<< Import ini
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,9 +16,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0; // Indeks halaman yang sedang aktif
 
+  // <<< STATE BARU UNTUK NAMA DAN FOTO PENGGUNA
+  String _userName = 'Pengguna'; // Default value untuk nama pengguna
+  String? _userPhotoUrl; // Default null untuk URL foto profil
+  // >>> AKHIR STATE BARU
+
   // Data dummy untuk bengkel terdekat (data asli)
   final List<Map<String, String>> allNearbyWorkshops = [
-    // ... data kamu ...
     {
       'name': 'Bengkel Udin',
       'distance': '100 M dari lokasi kamu',
@@ -87,7 +91,6 @@ class _HomePageState extends State<HomePage> {
 
   // Data dummy untuk rekomendasi bengkel (data asli)
   final List<Map<String, String>> allRecommendedWorkshops = [
-    // ... data kamu ...
     {
       'name': 'Bengkel Pak Jamil',
       'location': 'Jakarta',
@@ -110,16 +113,17 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, String>> filteredRecommendedProducts = [];
   List<Map<String, String>> filteredRecommendedWorkshops = [];
 
-  // STATE BARU: List untuk opsi dropdown
+  // List untuk opsi dropdown
   final List<String> _locationOptions = [
-    'New York',
+    'Sumatra selatan',
+    'Sumatra utara',
+    'Sumatra barat',
     'Jakarta',
     'Bandung',
     'Surabaya',
   ];
-  // STATE BARU: Lokasi yang saat ini dipilih
-  String _currentSelectedLocation =
-      'New York'; // Inisialisasi dengan nilai default "New York"
+  // Lokasi yang saat ini dipilih
+  String _currentSelectedLocation = 'Sumatra selatan';
 
   // Controller untuk TextField pencarian
   final TextEditingController _searchController = TextEditingController();
@@ -127,6 +131,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _loadUserData(); // <<< Panggil fungsi untuk memuat data pengguna saat inisialisasi
     filteredNearbyWorkshops = allNearbyWorkshops;
     filteredRecommendedProducts = allRecommendedProducts;
     filteredRecommendedWorkshops = allRecommendedWorkshops;
@@ -139,6 +144,21 @@ class _HomePageState extends State<HomePage> {
     _searchController.dispose();
     super.dispose();
   }
+
+  // <<< FUNGSI BARU UNTUK MEMUAT DATA PENGGUNA DARI SHAREDPREFERENCES
+  Future<void> _loadUserData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      // Ambil nama, jika tidak ada gunakan default 'Pengguna'
+      _userName = prefs.getString('user_name') ?? 'Pengguna';
+      // Ambil URL foto, bisa null jika tidak ada
+      _userPhotoUrl = prefs.getString('user_photo_url');
+    });
+    debugPrint(
+      'Data pengguna dimuat: Nama: $_userName, Foto URL: $_userPhotoUrl',
+    );
+  }
+  // >>> AKHIR FUNGSI BARU
 
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase();
@@ -159,7 +179,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Widget untuk konten Halaman Home (yang asli)
+  // Widget untuk konten Halaman Home
   Widget _buildHomePageContent() {
     return SingleChildScrollView(
       child: Column(
@@ -169,26 +189,40 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                const CircleAvatar(
+                // <<< MODIFIKASI UNTUK MENAMPILKAN FOTO PENGGUNA
+                CircleAvatar(
                   radius: 25,
-                  backgroundImage: AssetImage('assets/google_logo.png'),
+                  backgroundColor:
+                      Colors.white, // Latar belakang putih untuk ikon default
+                  backgroundImage:
+                      _userPhotoUrl != null && _userPhotoUrl!.isNotEmpty
+                      ? NetworkImage(
+                          _userPhotoUrl!,
+                        ) // Gunakan NetworkImage jika ada URL
+                      : null, // Jika tidak ada, gunakan child
+                  child: _userPhotoUrl == null || _userPhotoUrl!.isEmpty
+                      ? Image.asset('assets/profile1.png')
+                      : null, // Jika ada backgroundImage, child tidak perlu
                 ),
+                // >>> AKHIR MODIFIKASI FOTO PENGGUNA
                 const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
+                  children: [
+                    const Text(
                       'Selamat Datang',
                       style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
+                    // <<< MODIFIKASI UNTUK MENAMPILKAN NAMA PENGGUNA
                     Text(
-                      'Yoga Pratama',
-                      style: TextStyle(
+                      _userName, // Menampilkan nama pengguna dari state
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF1A1A2E),
                       ),
                     ),
+                    // >>> AKHIR MODIFIKASI NAMA PENGGUNA
                   ],
                 ),
                 const Spacer(),
@@ -217,8 +251,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const Spacer(),
                 DropdownButton<String>(
-                  value:
-                      _currentSelectedLocation, // Value dropdown harus sama dengan state
+                  value: _currentSelectedLocation,
                   icon: const Icon(
                     Icons.keyboard_arrow_down,
                     color: Color(0xFF4A6B6B),
@@ -226,10 +259,7 @@ class _HomePageState extends State<HomePage> {
                   underline: const SizedBox(),
                   onChanged: (String? newValue) {
                     setState(() {
-                      _currentSelectedLocation =
-                          newValue!; // Update state saat dipilih
-                      // Di sini kamu bisa menambahkan logika tambahan
-                      // misalnya, memfilter data bengkel berdasarkan lokasi baru
+                      _currentSelectedLocation = newValue!;
                       _filterWorkshopsByLocation(newValue);
                     });
                   },
@@ -250,7 +280,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 20),
 
-          // Search Bar (Kode ini sama)
+          // Search Bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: TextField(
@@ -271,7 +301,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 25),
 
-          // Bagian "Bengkel Terdekat" (Kode ini sama)
+          // Bagian "Bengkel Terdekat"
           Padding(
             padding: const EdgeInsets.only(left: 16.0),
             child: Text(
@@ -351,7 +381,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 25),
 
-          // Bagian "Rekomendasi Product" (Kode ini sama, dengan penyesuaian overflow)
+          // Bagian "Rekomendasi Product"
           Padding(
             padding: const EdgeInsets.only(left: 16.0),
             child: Text(
@@ -365,8 +395,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 15),
           SizedBox(
-            height:
-                200, // Pertimbangkan untuk menyesuaikan tinggi ini jika masih overflow
+            height: 200,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -414,9 +443,7 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(
-                          8.0,
-                        ), // Coba atur ke 6.0 jika masih overflow
+                        padding: const EdgeInsets.all(8.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -426,24 +453,20 @@ class _HomePageState extends State<HomePage> {
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
                               ),
-                              maxLines: 1, // Tambahkan ini
-                              overflow: TextOverflow.ellipsis, // Tambahkan ini
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(
-                              height: 4,
-                            ), // Coba atur ke 2.0 jika masih overflow
+                            const SizedBox(height: 4),
                             Text(
                               product['shop']!,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey[600],
                               ),
-                              maxLines: 1, // Tambahkan ini
-                              overflow: TextOverflow.ellipsis, // Tambahkan ini
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(
-                              height: 4,
-                            ), // Coba atur ke 2.0 jika masih overflow
+                            const SizedBox(height: 4),
                             Text(
                               product['price']!,
                               style: const TextStyle(
@@ -463,7 +486,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 25),
 
-          // Bagian "Rekomendasi Bengkel" (Kode ini sama)
+          // Bagian "Rekomendasi Bengkel"
           Padding(
             padding: const EdgeInsets.only(left: 16.0),
             child: Text(
@@ -554,7 +577,6 @@ class _HomePageState extends State<HomePage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          elevation: 0,
                         ),
                         child: const Text(
                           'BOOK',
@@ -576,7 +598,6 @@ class _HomePageState extends State<HomePage> {
   // Fungsi untuk memfilter bengkel berdasarkan lokasi
   void _filterWorkshopsByLocation(String? location) {
     if (location == null || location == 'New York') {
-      // Default, tampilkan semua bengkel
       setState(() {
         filteredNearbyWorkshops = allNearbyWorkshops;
         filteredRecommendedWorkshops = allRecommendedWorkshops;

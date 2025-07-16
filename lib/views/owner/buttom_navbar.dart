@@ -1,9 +1,9 @@
+// lib/main_wrapper_owner.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bengkelin/views/owner/add_service_page.dart';
 import 'package:flutter_bengkelin/views/owner/chat_page.dart';
 import 'package:flutter_bengkelin/views/owner/home_page_owner.dart';
-// import 'package:flutter_bengkelin/views/owner/product_owner.dart'; // Hapus atau komentari ini jika tidak lagi digunakan
-import 'package:flutter_bengkelin/views/owner/add_product_page.dart'; // Import halaman AddProductPage
+import 'package:flutter_bengkelin/views/owner/add_product_page.dart';
+import 'package:flutter_bengkelin/views/owner/add_service_page.dart'; // Tambahkan import untuk AddServicePage
 
 class MainWrapperOwner extends StatefulWidget {
   const MainWrapperOwner({super.key});
@@ -14,22 +14,28 @@ class MainWrapperOwner extends StatefulWidget {
 
 class _MainWrapperOwnerState extends State<MainWrapperOwner> {
   int _selectedIndex = 0;
-  late List<Widget> _widgetOptions;
+  // Ubah dari `late List<Widget> _widgetOptions;`
+  // menjadi langsung diinisialisasi untuk mencegah LateInitializationError
+  List<Widget> _widgetOptions = [];
 
   @override
   void initState() {
     super.initState();
+    // Pastikan _widgetOptions memiliki 4 elemen, sesuai dengan 4 item di BottomNavigationBar
     _widgetOptions = <Widget>[
-      HomePageOwner(onNavigateToTab: _onItemTapped),
-      const ChatsOwnerPage(),
-      const AddProductPage(), // Indeks 2 untuk Product (sesuai urutan di BottomNavigationBar)
-      const AddServicePage(), // Indeks 3 untuk Service
+      HomePageOwner(onNavigateToTab: _onItemTapped), // Indeks 0: Home
+      const ChatsOwnerPage(), // Indeks 1: Chats
+      const AddProductPage(), // Indeks 2: Product (sesuai permintaan sebelumnya mengarah ke AddProductPage)
+      // Perhatikan: Jika Anda ingin Service mengarah ke AddServicePage,
+      // maka ubah ServiceOwnerPage menjadi AddServicePage.
+      // Jika ServiceOwnerPage tetap ada dan AddServicePage hanya dipanggil dari sana,
+      // maka ServiceOwnerPage tetap benar di sini.
+      // Saya asumsikan Anda ingin tombol "Service" di Bottom Nav langsung ke AddServicePage.
+      const AddServicePage(), // Indeks 3: Service (mengarah ke AddServicePage)
     ];
   }
 
   void _onItemTapped(int index) {
-    // Logika navigasi tetap sederhana, karena kita sudah menukar widget di _widgetOptions
-    // Cukup update _selectedIndex
     setState(() {
       _selectedIndex = index;
     });
@@ -53,10 +59,10 @@ class _MainWrapperOwnerState extends State<MainWrapperOwner> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: const Color(0xFF4F625D), // Warna item yang dipilih
-        unselectedItemColor: Colors.grey, // Warna item yang tidak dipilih
+        selectedItemColor: const Color(0xFF4F625D),
+        unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed, // Penting jika item lebih dari 3
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }

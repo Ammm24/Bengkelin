@@ -1,21 +1,49 @@
+// lib/viewmodel/service_viewmodel.dart
 
-import '../config/endpoint.dart';
-import '../config/model/resp.dart';
-import '../config/network.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_bengkelin/config/endpoint.dart'; // Pastikan path ini benar
+import 'package:flutter_bengkelin/config/network.dart'; // Pastikan path ini benar
+import 'package:flutter_bengkelin/config/model/resp.dart'; // Pastikan path ini benar
 
-class ServiceViewmodel {
-
+class ServiceViewmodel extends ChangeNotifier {
   Future<Resp> kecamatan() async {
-    var resp = await Network.getApi(
-        Endpoint.kecamatanUrl);
-    Resp data = Resp.fromJson(resp);
-    return data;
+    debugPrint(
+      'ServiceViewmodel - Fetching kecamatan from: ${Endpoint.kecamatanUrl}',
+    );
+    return await Network.getApi(Endpoint.kecamatanUrl);
   }
 
-  Future<Resp> kelurahan({kecamatanId}) async {
-    var resp = await Network.getApi(
-        "${Endpoint.kelurahanUrl}/$kecamatanId");
-    Resp data = Resp.fromJson(resp);
-    return data;
+  Future<Resp> kelurahan({required int kecamatanId}) async {
+    // Sesuaikan URL jika API kelurahan Anda menggunakan query parameter seperti ?kecamatan_id=123
+    // Contoh: final String url = '${Endpoint.kelurahanUrl}?kecamatan_id=$kecamatanId';
+    // Atau jika API Anda menggunakan path parameter seperti /api/service/kelurahan/123
+    final String url = '${Endpoint.kelurahanUrl}/$kecamatanId';
+    debugPrint('ServiceViewmodel - Fetching kelurahan from: $url');
+    return await Network.getApi(url);
+  }
+
+  Future<Resp> registerUser({
+    required String fullName,
+    required String username,
+    required String email,
+    required int kecamatanId,
+    required int kelurahanId,
+    required String password,
+  }) async {
+    final String url = Endpoint.authRegisterUrl; // Menggunakan authRegisterUrl
+    debugPrint('ServiceViewmodel - Registering user to: $url');
+
+    final Map<String, dynamic> body = {
+      'nama_lengkap': fullName,
+      'username': username,
+      'email': email,
+      'kecamatan_id': kecamatanId,
+      'kelurahan_id': kelurahanId,
+      'password': password,
+      // Jika backend Anda mengharapkan 'password_confirmation' juga, tambahkan:
+      // 'password_confirmation': password,
+    };
+
+    return await Network.postApi(url, body);
   }
 }

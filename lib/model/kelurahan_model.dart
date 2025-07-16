@@ -5,9 +5,6 @@ class KelurahanModel {
   KelurahanModel({required this.id, required this.name});
 
   factory KelurahanModel.fromJson(Map<String, dynamic> json) {
-    return KelurahanModel(
-      id: json['id'],
-      name: json['name'],
-    );
+    return KelurahanModel(id: json['id'], name: json['name']);
   }
 }
