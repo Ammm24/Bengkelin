@@ -6,7 +6,11 @@ class Endpoint {
   // service
   static const String kecamatanUrl = '/api/service/kecamatan';
   static const String kelurahanUrl = '/api/service/kelurahan';
+<<<<<<< Updated upstream
 
   // user
   static const String userProfileUrl = '/api/user';
 }
+=======
+}
+>>>>>>> Stashed changes
