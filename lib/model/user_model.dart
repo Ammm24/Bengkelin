@@ -9,6 +9,7 @@ class UserModel {
   final String updatedAt;
   final int kecamatanId;
   final int kelurahanId;
+  final int? profilePicture; // <-- Ubah di sini menjadi int?
 
   UserModel({
     required this.id,
@@ -21,6 +22,7 @@ class UserModel {
     required this.updatedAt,
     required this.kecamatanId,
     required this.kelurahanId,
+    this.profilePicture, // <-- Hapus 'required' di sini
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -35,8 +37,15 @@ class UserModel {
       updatedAt: json['updated_at'] ?? '',
       kecamatanId: json['kecamatan_id'] ?? 0,
       kelurahanId: json['kelurahan_id'] ?? 0,
+      profilePicture:
+          json['profile_picture']
+              as int?, // <-- Ambil langsung dari JSON sebagai int?
     );
   }
+
+  get addressDetail => null;
+
+  get profilePictureUrl => null;
 
   Map<String, dynamic> toJson() {
     return {
@@ -50,6 +59,8 @@ class UserModel {
       'updated_at': updatedAt,
       'kecamatan_id': kecamatanId,
       'kelurahan_id': kelurahanId,
+      'profile_picture':
+          profilePicture, // <-- Tambahkan ini jika ingin menyertakannya di toJson
     };
   }
 }

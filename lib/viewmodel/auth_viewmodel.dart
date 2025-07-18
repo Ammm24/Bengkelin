@@ -1,23 +1,25 @@
-
 import '../config/endpoint.dart';
 import '../config/model/resp.dart';
 import '../config/network.dart';
 
 class AuthViewmodel {
   Future<Resp> login({email, password}) async {
-
-    Map<String, dynamic> formData = {
-      "email": email,
-      "password": password,
-    };
+    Map<String, dynamic> formData = {"email": email, "password": password};
 
     var resp = await Network.postApi(Endpoint.authLoginUrl, formData);
     var data = Resp.fromJson(resp);
     return data;
   }
 
-  Future<Resp> register({name, email, phone, password, confirmPassword, kecamatanId, kelurahanId}) async {
-
+  Future<Resp> register({
+    name,
+    email,
+    phone,
+    password,
+    confirmPassword,
+    kecamatanId,
+    kelurahanId,
+  }) async {
     Map<String, dynamic> formData = {
       "name": name,
       "email": email,
@@ -32,4 +34,6 @@ class AuthViewmodel {
     var data = Resp.fromJson(resp);
     return data;
   }
+
+  userDetail() {}
 }

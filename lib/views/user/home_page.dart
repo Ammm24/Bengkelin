@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bengkelin/views/user/chat_page.dart';
 import 'package:flutter_bengkelin/views/user/product_page.dart';
 import 'package:flutter_bengkelin/views/user/service_page.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // <<< Import ini
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_bengkelin/views/user/profile_page.dart'; // <<< Import ini
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -189,20 +190,31 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                // <<< MODIFIKASI UNTUK MENAMPILKAN FOTO PENGGUNA
-                CircleAvatar(
-                  radius: 25,
-                  backgroundColor:
-                      Colors.white, // Latar belakang putih untuk ikon default
-                  backgroundImage:
-                      _userPhotoUrl != null && _userPhotoUrl!.isNotEmpty
-                      ? NetworkImage(
-                          _userPhotoUrl!,
-                        ) // Gunakan NetworkImage jika ada URL
-                      : null, // Jika tidak ada, gunakan child
-                  child: _userPhotoUrl == null || _userPhotoUrl!.isEmpty
-                      ? Image.asset('assets/profile1.png')
-                      : null, // Jika ada backgroundImage, child tidak perlu
+                // <<< MODIFIKASI UNTUK MENAMPILKAN FOTO PENGGUNA DAN NAVIGASI
+                GestureDetector(
+                  // <<< Tambahkan GestureDetector di sini
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ProfilePage(),
+                      ),
+                    );
+                  },
+                  child: CircleAvatar(
+                    radius: 25,
+                    backgroundColor:
+                        Colors.white, // Latar belakang putih untuk ikon default
+                    backgroundImage:
+                        _userPhotoUrl != null && _userPhotoUrl!.isNotEmpty
+                        ? NetworkImage(
+                            _userPhotoUrl!,
+                          ) // Gunakan NetworkImage jika ada URL
+                        : null, // Jika tidak ada, gunakan child
+                    child: _userPhotoUrl == null || _userPhotoUrl!.isEmpty
+                        ? Image.asset('assets/profile1.png')
+                        : null, // Jika ada backgroundImage, child tidak perlu
+                  ),
                 ),
                 // >>> AKHIR MODIFIKASI FOTO PENGGUNA
                 const SizedBox(width: 10),
